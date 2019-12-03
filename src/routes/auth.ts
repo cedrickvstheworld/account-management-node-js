@@ -31,6 +31,75 @@ class Router {
       response.status(HttpStatus.BAD_REQUEST).json(error)
     })
   }
+  
+  /**
+   * verify token of account verification
+   */
+  public verifyAccountToken = (request: Request, response: Response) => {
+    const {token} = request.query
+    this.auth.verifyEmailToken(token)
+    .then((reply) => {
+      response.status(HttpStatus.OK).json(reply)
+    })
+    .catch((error) => {
+      response.status(HttpStatus.BAD_REQUEST).json(error)
+    })
+  }
+
+  /**
+   * set account password
+   */
+  public setAccountPassword = (request: Request, response: Response) => {
+    const {setPasswordToken, password} = request.body
+    this.auth.setAccountPassword(setPasswordToken, password)
+    .then((user) => {
+      response.status(HttpStatus.OK).json(user)
+    })
+    .catch((error) => {
+      response.status(HttpStatus.BAD_REQUEST).json(error)
+    })
+  }
+
+  /**
+   * local-sign-in strategy
+   */
+  public signIn = (request: Request, response: Response, next: NextFunction) => {
+    passport.authenticate('local-signin', {session: false}, async (error, user, info) => {
+      if (!info) {
+        return response.status(HttpStatus.UNAUTHORIZED).json(error)
+      }
+      request.logIn(user, (error) => {
+        if (error) {
+          console.log('REQUEST LOGIN ERROR: ', error)
+        }
+      })
+      return response.status(HttpStatus.OK).json(user)
+    })(request, response, next)
+  }
+
+  /**
+   * authorization
+   */
+  public authorize = (request: Request, response: Response) => {
+    let token
+    try {
+      // @ts-ignore
+      token = (request.headers.authorization.split(' '))[1]
+    }
+    catch (error) {
+      return response.sendStatus(HttpStatus.UNAUTHORIZED)
+    }
+    // @ts-ignore
+    let {hash=''} = request.fingerprint
+    this.auth.verifyToken(token, hash)
+    .then((user) => {
+      response.setHeader('customer', JSON.stringify(user))
+      response.status(HttpStatus.OK).json(user)
+    })
+    .catch(() => {
+      response.sendStatus(HttpStatus.UNAUTHORIZED)
+    })
+  }
 
 }
 

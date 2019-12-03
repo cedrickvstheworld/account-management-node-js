@@ -1,5 +1,6 @@
 import Router from '../routes/auth'
 import express from 'express'
+import * as validator from '../utils/requestValidators/auth'
 
 class Urls {
    // type declarations
@@ -10,9 +11,30 @@ class Urls {
    }
    
    public expose() {
-     // customer SignUp
-     this.router.post('/:accountId/email-verification', Router.sendAccountEmailVerification)
-     this.router.get('/verify-email')
+     // user SignUp
+     this.router.post('/sign-up/email-verification/:accountId', Router.sendAccountEmailVerification)
+
+     // user verify email token and get set password token
+     this.router.get('/sign-up/verify-email', Router.verifyAccountToken)
+
+     // set account password (signup process)
+     this.router.patch(
+       '/sign-up/set-password',
+       validator.setPassword.pipeline,
+       validator.setPassword.middleware,
+       Router.setAccountPassword
+     )
+
+     // local-sign-in 
+     this.router.post(
+       '/sign-in',
+       validator.localSignUpFieldsComplete.pipeline,
+       validator.localSignUpFieldsComplete.middleware,
+       Router.signIn
+     )
+
+     // authorization
+     this.router.get('/', Router.authorize)
      
      return this.router
    }

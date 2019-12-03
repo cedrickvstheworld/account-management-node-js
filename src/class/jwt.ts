@@ -24,8 +24,8 @@ class Auth {
 
   public getAccessToken(payload: any): string {
     // temporary long live access token
-    const token = this.sign(payload, 60 * 60 * 24 * 6, this.secret_key)
-    // const token = this.sign(payload, 60 * 30, this.secret_key)
+    // const token = this.sign(payload, 60 * 60 * 24 * 6, this.secret_key)
+    const token = this.sign(payload, 60 * 30, this.secret_key)
     return token
   }
 

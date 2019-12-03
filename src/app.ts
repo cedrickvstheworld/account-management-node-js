@@ -139,7 +139,7 @@ class Main {
       ]
     }))
     this.app.use(passport.initialize())
-    // require('./class/passport')
+    require('./class/passport')
     this.connectToDatabase()
     this.loadRedisConfig()
     this.loadRouters()
