@@ -16,12 +16,12 @@ import morgan from 'morgan'
 import {createClient} from 'redis'
 import passport from 'passport'
 const fingerprint = require('express-fingerprint')
-import nunjucks from 'nunjucks'
 
 /**
  * routers
  */
-
+import accountsRouter from './urls/accounts'
+import authRouter from './urls/auth'
 
 /**
  * Types
@@ -88,6 +88,8 @@ class Main {
 
   // initialize routes
   private loadRouters() {
+    this.app.use('/accounts', accountsRouter)
+    this.app.use('/auth', authRouter)
   }
 
   // initialize server configurations
@@ -141,12 +143,7 @@ class Main {
     this.connectToDatabase()
     this.loadRedisConfig()
     this.loadRouters()
-    // 
-    nunjucks.configure('views', {
-      express: this.app,
-      autoescape: true
-    })
-    this.app.set('view engine', 'html')
+    this.app.set('view engine', 'hbs')
   }
 
 }

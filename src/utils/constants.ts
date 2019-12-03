@@ -4,5 +4,5 @@ export const TOKEN_TYPES = {
 }
 
 export const USER_TYPES = {
-  SUPER_ADMIN: 0
+  ADMIN: 0
 }

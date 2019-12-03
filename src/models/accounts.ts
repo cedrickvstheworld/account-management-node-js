@@ -51,7 +51,7 @@ let account = {
     },
     roleLevel: {
       type: Number,
-      default: USER_TYPES.SUPER_ADMIN
+      default: USER_TYPES.ADMIN
     },
     addedBy: {
       _id: {
@@ -68,7 +68,7 @@ let account = {
       },
       roleLevel: {
         type: Number,
-        default: USER_TYPES.SUPER_ADMIN
+        default: USER_TYPES.ADMIN
       }
     }
   }
