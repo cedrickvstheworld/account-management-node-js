@@ -33,6 +33,9 @@ class Urls {
        Router.signIn
      )
 
+     // refresh access token
+     this.router.patch('/refresh-token', Router.refreshAccessToken)
+
      // authorization
      this.router.get('/', Router.authorize)
      

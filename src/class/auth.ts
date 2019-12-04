@@ -174,6 +174,24 @@ export default class Auth {
   }
 
   /**
+   * refresh Access Token
+   * generate new access Token if refresh Token is valid
+   */
+  public refreshAccessToken(refreshToken: string, fingerprint: string) {
+    return new Promise((resolve, reject) => {
+      this.verifyToken(refreshToken, fingerprint)
+      .then((user: any) => {
+        user['accessToken'] = Jwt.getAccessToken(user)
+        user['refreshToken'] = refreshToken
+        resolve(user)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+    })
+  }
+
+  /**
    * update Auth Tag (isSignedIn?)
    */
   public async updateAuthTag(accountId: string) {
@@ -201,6 +219,32 @@ export default class Auth {
       }
       catch (error) {
         console.log(error)
+      }
+    })
+  }
+
+  /**
+   * account Logout
+   */
+  public logout(fingerprint: string, accountId: string) {
+    return new Promise((resolve, reject) => {
+      try {
+        this.redisClient.get(accountId, (err, reply) => {
+          if (reply) {
+            let authenticatedDevices = JSON.parse(reply).filter((hash: string) => {
+              if (hash !== fingerprint) {
+                return hash
+              }
+            })
+            this.redisClient.getset(accountId, JSON.stringify(authenticatedDevices), async () => {
+              await this.updateAuthTag(accountId)
+            })
+          }
+        })
+        resolve()
+      }
+      catch (error) {
+        reject(error)
       }
     })
   }

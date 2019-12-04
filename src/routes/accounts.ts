@@ -51,6 +51,22 @@ class Router {
     })
   }
 
+  /**
+   * account device logout
+   */
+  public logout = (request: Request, response: Response) => {
+    // @ts-ignore
+    let {hash=''} = request.fingerprint
+    const {customerId} = request.params
+    this.account.logout(hash, customerId)
+    .then(() => {
+      response.sendStatus(HttpStatus.OK)
+    })
+    .catch((error) => {
+      response.status(HttpStatus.BAD_REQUEST).json(error)
+    })
+  }
+
 }
 
 export default new Router()

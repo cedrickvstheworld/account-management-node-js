@@ -23,8 +23,10 @@ class Urls {
        Router.signUp
      )
 
+     // logout
+     this.router.post('/logout/:customerId', Router.logout)
 
-    return this.router
+     return this.router
    }
 
 }

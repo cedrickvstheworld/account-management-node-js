@@ -78,6 +78,22 @@ class Router {
   }
 
   /**
+   * refresh access token
+   */
+  public refreshAccessToken = (request: Request, response: Response) => {
+    // @ts-ignore
+    let {hash=''} = request.fingerprint
+    let {refreshToken} = request.body
+    this.auth.refreshAccessToken(refreshToken, hash)
+    .then((user) => {
+      response.status(HttpStatus.OK).json(user)
+    })
+    .catch(() => {
+      response.sendStatus(HttpStatus.UNAUTHORIZED)
+    })
+  }
+
+  /**
    * authorization
    */
   public authorize = (request: Request, response: Response) => {
