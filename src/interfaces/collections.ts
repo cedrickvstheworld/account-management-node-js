@@ -33,6 +33,7 @@ export interface ITransportConfig {
 
 export interface IRequest extends Request {
   files: any
+  headers: any
 }
 
 export interface UploadedImage {
@@ -49,4 +50,11 @@ export interface uploadFiles {
   type: string
   fileName?: string
   size: number
+}
+
+export interface IActionBy {
+  _id: string
+  name: string
+  avatarUrl: string
+  roleLevel: number
 }

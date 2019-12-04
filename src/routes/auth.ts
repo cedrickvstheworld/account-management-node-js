@@ -33,7 +33,7 @@ class Router {
   }
   
   /**
-   * verify token of account verification
+   * ** ENDPOINT **  verify token of account verification
    */
   public verifyAccountToken = (request: Request, response: Response) => {
     const {token} = request.query
@@ -47,7 +47,7 @@ class Router {
   }
 
   /**
-   * set account password
+   * ** ENDPOINT **  set account password
    */
   public setAccountPassword = (request: Request, response: Response) => {
     const {setPasswordToken, password} = request.body
@@ -61,7 +61,7 @@ class Router {
   }
 
   /**
-   * local-sign-in strategy
+   * ** ENDPOINT **  local-sign-in strategy
    */
   public signIn = (request: Request, response: Response, next: NextFunction) => {
     passport.authenticate('local-signin', {session: false}, async (error, user, info) => {
@@ -78,7 +78,7 @@ class Router {
   }
 
   /**
-   * refresh access token
+   * ** ENDPOINT **  refresh access token
    */
   public refreshAccessToken = (request: Request, response: Response) => {
     // @ts-ignore
@@ -94,7 +94,7 @@ class Router {
   }
 
   /**
-   * authorization
+   * ** ENDPOINT **  authorization
    */
   public authorize = (request: Request, response: Response) => {
     let token
@@ -109,7 +109,7 @@ class Router {
     let {hash=''} = request.fingerprint
     this.auth.verifyToken(token, hash)
     .then((user) => {
-      response.setHeader('customer', JSON.stringify(user))
+      response.setHeader('user', JSON.stringify(user))
       response.status(HttpStatus.OK).json(user)
     })
     .catch(() => {

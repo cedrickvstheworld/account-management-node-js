@@ -5,6 +5,8 @@ import bcrypt from 'bcrypt'
 
 // types
 import {Request, Response, NextFunction} from 'express'
+import { IAccount, IAccountModel } from '../interfaces/models/account';
+import { IActionBy } from '../interfaces/collections';
 
 // check Modules/Settings
 export const validateModules = (modules: Array<number | any>, moduleConstants: Array<any>): boolean => {
@@ -58,3 +60,22 @@ export const createVCode = (): string => {
   return (Math.floor(Math.random() * (9999 - 1000)) + 1000).toString()
 }
 
+export const actionBy = (user: IAccountModel): IActionBy => {
+  let actionBy = {
+    _id: '',
+    name: '',
+    avatarUrl: '',
+    roleLevel: 0
+  }
+  try {
+    const {_id, firstName, lastName, avatarUrl, roleLevel} = user
+    actionBy._id = _id
+    actionBy.name = `${firstName} ${lastName}`
+    actionBy.avatarUrl = avatarUrl
+    actionBy.roleLevel = roleLevel
+  }
+  catch (error) {
+    console.log('CONSTRUCT ACTION BY ERROR', error)
+  }
+  return actionBy
+}

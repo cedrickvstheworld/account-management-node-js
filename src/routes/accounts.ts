@@ -6,6 +6,7 @@ import httpError from '../utils/httpError';
 import * as responseConstants from '../utils/responseConstants'
 import * as regExp from '../utils/regularExpressions'
 import Account from '../class/account'
+import { actionBy } from '../utils/sharedFunctions';
 
 /**
  * Router Class
@@ -38,11 +39,16 @@ class Router {
   /**
    * ** ENDPOINT ** local sign-up strategy
    */
-  public signUp = (request: Request, response: Response) => {
+  public signUp = (request: IRequest, response: Response) => {
     // @ts-ignore
     let {hash=''} = request.fingerprint
-    let {avatar, firstName, lastName, email, mobileNo, role} = request.body
-    this.account.signUp(firstName, lastName, email, mobileNo, parseInt(role), avatar)
+    let {firstName, lastName, email, mobileNo, role} = request.body
+    let avatar
+    if (request.files) {
+      avatar = request.files.avatar
+    }
+    let user = JSON.parse(request.headers.user) || {}
+    this.account.signUp(firstName, lastName, email, mobileNo, parseInt(role), actionBy(user), avatar)
     .then(user => {
       response.status(HttpStatus.CREATED).json(user)
     })
@@ -52,13 +58,31 @@ class Router {
   }
 
   /**
-   * account device logout
+   * ** ENDPOINT ** get account details by ID
+   */
+  public getAccountDetails = (request: Request, response: Response) => {
+    let {accountId} = request.params
+    this.account.getAccountDetails(accountId)
+    .then((account) => {
+      if (!account) {
+        return response.status(HttpStatus.NOT_FOUND)
+        .json(new httpError(responseConstants.BAD_REQUEST_FIND_ACCOUNT, 'account does not exists'))
+      }
+      response.status(HttpStatus.OK).json(account)
+    })
+    .catch((error) => {
+      response.status(HttpStatus.BAD_REQUEST).json(error)
+    })
+  }
+
+  /**
+   * ** ENDPOINT **  account device logout
    */
   public logout = (request: Request, response: Response) => {
     // @ts-ignore
     let {hash=''} = request.fingerprint
-    const {customerId} = request.params
-    this.account.logout(hash, customerId)
+    const {accountId} = request.params
+    this.account.logout(hash, accountId)
     .then(() => {
       response.sendStatus(HttpStatus.OK)
     })

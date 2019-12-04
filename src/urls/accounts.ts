@@ -24,7 +24,10 @@ class Urls {
      )
 
      // logout
-     this.router.post('/logout/:customerId', Router.logout)
+     this.router.post('/logout/:accountId', Router.logout)
+
+     // account details
+     this.router.get('/:accountId', Router.getAccountDetails)
 
      return this.router
    }

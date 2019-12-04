@@ -4,13 +4,14 @@ import Auth from './auth'
 import httpError from '../utils/httpError'
 import * as responseConstants from '../utils/responseConstants'
 import { createId } from '../utils/createId';
+import { IActionBy } from '../interfaces/collections';
 
 export default class Account extends Auth {
 
   /**
    * signup
    */
-  public signUp(firstName: string, lastName: string, email: string, mobileNo: string, role: number, avatar: File) {
+  public signUp(firstName: string, lastName: string, email: string, mobileNo: string, role: number, addedBy: IActionBy, avatar: File) {
     return new Promise(async (resolve, reject) => {
       try {
         // check if email already exists
@@ -29,6 +30,7 @@ export default class Account extends Auth {
           },
           mobileNo,
           role,
+          addedBy,
           createdAt: currentDate,
           updatedAt: currentDate
         })
@@ -52,6 +54,13 @@ export default class Account extends Auth {
         reject(error)
       }
     })
+  }
+
+  /**
+   * get user details by ID
+   */
+  public getAccountDetails(accoutId: string) {
+    return AccountModel.findOne({_id: accoutId}).select('-password')
   }
 
 }
