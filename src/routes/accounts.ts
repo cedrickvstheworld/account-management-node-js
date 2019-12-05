@@ -80,7 +80,7 @@ class Router {
    */
   public searchAccounts = (request: Request, response: Response) => {
     let {userRole='show-all', status='show-all', searchText, orderBy, order, offset, limit} = request.query
-    this.account.searchAccounts(userRole, status, searchText, orderBy, order, offset, limit)
+    this.account.searchAccounts(userRole, status, searchText, orderBy, parseInt(order), parseInt(offset), parseInt(limit))
     .then((result) => {
       response.status(HttpStatus.OK).json(result)
     })
