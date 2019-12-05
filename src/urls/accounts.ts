@@ -35,7 +35,12 @@ class Urls {
      )
 
      // search accounts
-     this.router.get('/search', Router.searchAccounts)
+     this.router.get(
+       '/search',
+       validator.searchAccounts.pipeline,
+       validator.searchAccounts.middleware,
+       Router.searchAccounts
+     )
 
      // account details
      this.router.get('/:accountId', Router.getAccountDetails)

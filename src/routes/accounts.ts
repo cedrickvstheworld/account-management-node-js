@@ -79,8 +79,8 @@ class Router {
    * ** ENDPOINT **  search accounts
    */
   public searchAccounts = (request: Request, response: Response) => {
-    let {searchText, orderBy, order, offset, limit} = request.query
-    this.account.searchAccounts(searchText, orderBy, order, offset, limit)
+    let {userRole='show-all', status='show-all', searchText, orderBy, order, offset, limit} = request.query
+    this.account.searchAccounts(userRole, status, searchText, orderBy, order, offset, limit)
     .then((result) => {
       response.status(HttpStatus.OK).json(result)
     })

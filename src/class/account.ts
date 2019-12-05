@@ -69,9 +69,13 @@ export default class Account extends Auth {
   /**
    * search accounts
    */
-  public searchAccounts(searchText: string, orderBy: string = '', order: number = 1, offset: number = 0, limit: number = 0) {
+  public searchAccounts(userRole: string, status: string, searchText: string, orderBy: string = '', order: number = 1, offset: number = 0, limit: number = 0) {
     return new Promise((resolve, reject) => {
-      AccountModel.find()
+      AccountModel.find(Object.assign(
+        {},
+        userRole !== 'show-all' ? {roleLevel: JSON.parse(userRole)} : {},
+        status !== 'show-all' ? {isSuspended: !(JSON.parse(status))} : {}
+      ))
       .then(async (accounts) => {
         const _accounts = accounts.map((account) => {
           let {firstName, lastName, email, roleLevel, isSuspended, addedBy, createdAt, lastSignedIn} = account

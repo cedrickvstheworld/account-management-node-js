@@ -1,5 +1,5 @@
 // libs
-import {body} from 'express-validator'
+import {body, query} from 'express-validator'
 
 // utils
 import * as regExp from '../regularExpressions'
@@ -39,6 +39,18 @@ export const accountStatus: IRequestValidator = {
     body('isSuspended')
     .isBoolean()
     .withMessage('@requestBody -> isSuspended: boolean'),
+  ],
+  middleware: genericValidationMiddleWare
+}
+
+export const searchAccounts: IRequestValidator = {
+  pipeline: [
+    query('userRole')
+    .matches(/(show-all)|(0)/)
+    .optional(),
+    query('status')
+    .matches(/(show-all)|(true)|(false)/)
+    .optional(),
   ],
   middleware: genericValidationMiddleWare
 }
