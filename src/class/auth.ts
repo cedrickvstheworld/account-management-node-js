@@ -164,6 +164,17 @@ export default class Auth {
           if (validDevices.indexOf(fingerprint) === -1) {
             return reject()
           }
+          /**
+           * reject if user is suspended
+           * you will need to fetch data from the DB for a fresh "isSuspended" value
+           */
+          const user = await AccountModel.findOne({_id: payload.user._id})
+          if (user && user.isSuspended) {
+            return reject()
+          }
+          if (payload.user.isSuspended) {
+            return reject()
+          }
           return resolve(payload.user)
         })
       }

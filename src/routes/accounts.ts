@@ -76,6 +76,20 @@ class Router {
   }
 
   /**
+   * ** ENDPOINT **  search accounts
+   */
+  public searchAccounts = (request: Request, response: Response) => {
+    let {searchText, orderBy, order, offset, limit} = request.query
+    this.account.searchAccounts(searchText, orderBy, order, offset, limit)
+    .then((result) => {
+      response.status(HttpStatus.OK).json(result)
+    })
+    .catch((error) => {
+      response.status(HttpStatus.BAD_REQUEST).json(error)
+    })
+  }
+
+  /**
    * ** ENDPOINT **  account device logout
    */
   public logout = (request: Request, response: Response) => {
@@ -85,6 +99,21 @@ class Router {
     this.account.logout(hash, accountId)
     .then(() => {
       response.sendStatus(HttpStatus.OK)
+    })
+    .catch((error) => {
+      response.status(HttpStatus.BAD_REQUEST).json(error)
+    })
+  }
+
+  /**
+   * ** ENDPOINT ** update account status (suspend/unsuspend)
+   */
+  public changeAccountStatus = (request: Request, response: Response) => {
+    const {accountId} = request.params
+    const {isSuspended} = request.body
+    this.account.changeAccountStatus(accountId, isSuspended)
+    .then((user) => {
+      response.status(HttpStatus.OK).json(user)
     })
     .catch((error) => {
       response.status(HttpStatus.BAD_REQUEST).json(error)

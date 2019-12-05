@@ -32,19 +32,21 @@ passport.use('local-signin', new LocalStrategy(
   (request: Request, username: string, password: string, done: any) => {
     AccountModel.findOne({'email.value': username})
     .then(async (user) => {
+      // reject if user not found
       if (!user) {
         return done(new httpError(responseConstants.AUTHENTICATION_ERROR, 'user not found'), false)
       }
+      // reject if account is not verified
       if (!user.email.isVerified) {
         return done(new httpError(responseConstants.AUTHENTICATION_ERROR, 'verify your email first'), false)
       }
-      // check if there is a password set
-      if (!user.password) {
-        return done(new httpError(responseConstants.AUTHENTICATION_ERROR,
-          'set a password first so you can login with your email locally. make sure that the email is also verified'), false)
-      }
+      // reject if password is incorrect
       if (!Bcrypt.compare(password, user.password)) {
         return done(new httpError(responseConstants.AUTHENTICATION_ERROR, 'incorrect password'), false)
+      }
+      // reject if user is suspended
+      if (user.isSuspended) {
+        return done(new httpError(responseConstants.AUTHENTICATION_ERROR, 'your account is suspended'), false)
       }
       // generate access-token for the user
       // get accessToken & refreshToken

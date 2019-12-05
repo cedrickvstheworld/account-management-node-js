@@ -8,3 +8,7 @@ export const TOKEN_TYPES = {
 export const USER_TYPES = {
   ADMIN: 0
 }
+
+export const user_types = [
+  'ADMIN' // 0
+]

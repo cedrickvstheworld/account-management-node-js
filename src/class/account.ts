@@ -4,7 +4,10 @@ import Auth from './auth'
 import httpError from '../utils/httpError'
 import * as responseConstants from '../utils/responseConstants'
 import { createId } from '../utils/createId';
-import { IActionBy } from '../interfaces/collections';
+import { IActionBy } from '../interfaces/collections'
+import { dataFilter } from '../utils/sharedFunctions'
+import moment from 'moment'
+import { user_types } from '../utils/constants';
 
 export default class Account extends Auth {
 
@@ -63,4 +66,59 @@ export default class Account extends Auth {
     return AccountModel.findOne({_id: accoutId}).select('-password')
   }
 
+  /**
+   * search accounts
+   */
+  public searchAccounts(searchText: string, orderBy: string = '', order: number = 1, offset: number = 0, limit: number = 0) {
+    return new Promise((resolve, reject) => {
+      AccountModel.find()
+      .then(async (accounts) => {
+        const _accounts = accounts.map((account) => {
+          let {firstName, lastName, email, roleLevel, isSuspended, addedBy, createdAt, lastSignedIn} = account
+          return {
+            name: `${firstName} ${lastName}`,
+            email: `${email.value}`,
+            lastLogin: `${moment(lastSignedIn).format('L')}-${moment(lastSignedIn).format('LT')}`,
+            userRole: user_types[roleLevel],
+            status: isSuspended ? 'SUSPENDED' : 'ACTIVE',
+            addedBy: `${addedBy.name}`,
+            dateAdded: moment(createdAt).format('L')
+          }
+        })
+        const _order = order !== 1 ? 'DESC' : 'ASC'
+        const filtered = await dataFilter(_accounts, searchText, orderBy, _order, offset, limit)
+        resolve(filtered)
+      })
+      .catch((error) => {
+        console.log('SEARCH ACCOUNT ERROR', error)
+        reject(error)
+      })
+    })
+  }
+
+  /**
+   * suspend/unsuspend user account
+   */
+  public changeAccountStatus(accountId: string, isSuspended: boolean) {
+    return new Promise((resolve, reject) => {
+      AccountModel.findOne({_id: accountId})
+      .select('-password')
+      .then(async (user) => {
+        if (!user) {
+          return reject(new httpError(responseConstants.BAD_REQUEST_FIND_ACCOUNT, 'account not found'))
+        }
+        if (isSuspended) {
+          user.isSuspended = true
+        }
+        else {
+          user.isSuspended = false
+        }
+        const updatedUser = await user.save()
+        resolve(updatedUser)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+    })
+  }
 }

@@ -33,3 +33,12 @@ export const signUp: IRequestValidator = {
   ],
   middleware: genericValidationMiddleWare
 }
+
+export const accountStatus: IRequestValidator = {
+  pipeline: [
+    body('isSuspended')
+    .isBoolean()
+    .withMessage('@requestBody -> isSuspended: boolean'),
+  ],
+  middleware: genericValidationMiddleWare
+}

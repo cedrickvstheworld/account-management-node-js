@@ -26,6 +26,17 @@ class Urls {
      // logout
      this.router.post('/logout/:accountId', Router.logout)
 
+     // suspend/unsuspend user
+     this.router.patch(
+       '/status/:accountId',
+       validator.accountStatus.pipeline,
+       validator.accountStatus.middleware,
+       Router.changeAccountStatus
+     )
+
+     // search accounts
+     this.router.get('/search', Router.searchAccounts)
+
      // account details
      this.router.get('/:accountId', Router.getAccountDetails)
 
