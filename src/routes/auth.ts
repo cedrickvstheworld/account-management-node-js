@@ -61,6 +61,35 @@ class Router {
   }
 
   /**
+   * ** ENDPOINT ** verify change email token
+   * this action verifies the email
+   */
+  public verifyChangeEmail = (request: Request, response: Response) => {
+    const {token} = request.query
+    this.auth.verifyChangeEmail(token)
+    .then((reply) => {
+      response.status(HttpStatus.OK).json(reply)
+    })
+    .catch((error) => {
+      response.status(HttpStatus.BAD_REQUEST).json(error)
+    })
+  }
+
+  /**
+   * ** ENDPOINT ** send email verification (change email)
+   */
+  public sendChangeEmailVerification = (request: Request, response: Response) => {
+    const {accountId} = request.params
+    this.auth.sendChangeEmailVerification(accountId)
+    .then(() => {
+      response.sendStatus(HttpStatus.OK)
+    })
+    .catch((error) => {
+      response.status(HttpStatus.BAD_REQUEST).json(error)
+    })
+  }
+
+  /**
    * ** ENDPOINT **  local-sign-in strategy
    */
   public signIn = (request: Request, response: Response, next: NextFunction) => {

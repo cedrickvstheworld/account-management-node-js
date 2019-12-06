@@ -34,6 +34,14 @@ class Urls {
        Router.changeAccountStatus
      )
 
+     // reset Password
+     this.router.patch(
+      '/reset-password/:accountId',
+      validator.resetPassword.pipeline,
+      validator.resetPassword.middleware,
+      Router.resetPassword
+    )
+
      // search accounts
      this.router.get(
        '/search',
@@ -44,6 +52,16 @@ class Urls {
 
      // account details
      this.router.get('/:accountId', Router.getAccountDetails)
+
+     // account details
+     this.router.patch(
+       '/:accountId',
+       multipartMiddleware,
+       Router.validImage,
+       validator.signUp.pipeline,
+       validator.signUp.middleware,
+       Router.editAccount
+     )
 
      return this.router
    }

@@ -58,6 +58,25 @@ class Router {
   }
 
   /**
+   * ** ENDPOINT ** edit account
+   */
+  public editAccount = (request: IRequest, response: Response) => {
+    const {accountId} = request.params
+    const {firstName, lastName, email, mobileNo, role} = request.body
+    let avatar
+    if (request.files) {
+      avatar = request.files.avatar
+    }
+    this.account.editAccount(accountId, firstName, lastName, email, mobileNo, parseInt(role), avatar)
+    .then(updatedUser => {
+      response.status(HttpStatus.OK).json(updatedUser)
+    })
+    .catch(error => {
+      response.status(HttpStatus.BAD_REQUEST).json(error)
+    })
+  }
+
+  /**
    * ** ENDPOINT ** get account details by ID
    */
   public getAccountDetails = (request: Request, response: Response) => {
@@ -114,6 +133,21 @@ class Router {
     this.account.changeAccountStatus(accountId, isSuspended)
     .then((user) => {
       response.status(HttpStatus.OK).json(user)
+    })
+    .catch((error) => {
+      response.status(HttpStatus.BAD_REQUEST).json(error)
+    })
+  }
+
+  /**
+   * reset user password
+   */
+  public resetPassword = (request: Request, response: Response) => {
+    const {accountId} = request.params
+    let {oldPassword, newPassword} = request.body
+    this.account.resetPassword(accountId, oldPassword, newPassword)
+    .then(() => {
+      response.sendStatus(HttpStatus.OK)
     })
     .catch((error) => {
       response.status(HttpStatus.BAD_REQUEST).json(error)

@@ -25,7 +25,7 @@ export const signUp: IRequestValidator = {
     .withMessage('email must be valid'),
     body('mobileNo')
     .matches(regExp.validNumber)
-    .withMessage('@requestBody -> fullName: must be a valid number (e.g. 9280724566)')
+    .withMessage('@requestBody -> mobileNo: must be a valid number (e.g. 9280724566)')
     .optional(),
     body('role')
     .isIn([USER_TYPES.ADMIN.toString()])
@@ -51,6 +51,18 @@ export const searchAccounts: IRequestValidator = {
     query('status')
     .matches(/(show-all)|(true)|(false)/)
     .optional(),
+  ],
+  middleware: genericValidationMiddleWare
+}
+
+export const resetPassword: IRequestValidator = {
+  pipeline: [
+    body('oldPassword')
+    .not()
+    .isEmpty(),
+    body('newPassword')
+    .matches(regExp.validPassword)
+    .withMessage('@requestBody -> newPassword: must pass this /^(?=.*?[0-9])(?=.*?[A-Z]).{6,}$/g to be valid'),
   ],
   middleware: genericValidationMiddleWare
 }

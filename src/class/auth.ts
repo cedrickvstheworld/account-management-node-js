@@ -16,6 +16,7 @@ export default class Auth {
   private secret_refresh_key: string | any
   private sign_up_secret: string | any
   private set_password_secret: string | any
+  private change_email_secret: string | any
 
   constructor() {
     this.redisClient = createClient(`redis://${process.env.REDIS_HOST}`)
@@ -23,11 +24,13 @@ export default class Auth {
     this.secret_key = process.env.JWT_SECRET_KEY
     this.secret_refresh_key = process.env.JWT_SECRET_KEY
     this.sign_up_secret = process.env.SIGN_UP_SECRET
+
+    this.change_email_secret = process.env.CHANGE_EMAIL_SECRET
     this.set_password_secret = process.env.SET_PASSWORD_SECRET
   }
 
   /**
-   * send account verification link
+   * send account verification link (SIGN-UP)
    */
   public sendEmailVerification(accountId: string) {
     return new Promise(async (resolve, reject) => {
@@ -108,6 +111,71 @@ export default class Auth {
       }
       catch (error) {
         console.log('SET PASSWORD ERROR', error)
+        reject(new httpError(responseConstants.BAD_REQUEST_SIGN_UP, 'Invalid Token'))
+      }
+    })
+  }
+
+  /**
+   * send change email verification Link (EDIT EMAIL)
+   */
+  public sendChangeEmailVerification(accountId: string) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const account = await AccountModel.findOne({_id: accountId})
+        if (!account) {
+          return reject(new httpError(responseConstants.BAD_REQUEST_VERIFY_EMAIL, 'account does not exists'))
+        }
+        // email
+        // create token
+        const token =  jwt.sign({user: account._id}, this.change_email_secret, {expiresIn: '7d'})
+        const verificationLink = `${process.env.SERVICE_HOST}/auth/update-account/verify-email?token=${token}`
+        const mailer: Mailer =  new Mailer(account.email.value, 'Email Verification')
+        mailer.accountVerification({
+          button: {
+            link: verificationLink,
+            label: 'Verify Your Email'
+          },
+          content: `Your email was changed. Click the Link Below to verify it or ignore this mail if you have no idea on what's happening`,
+          logo: emailImages.Logo,
+          grayLogo: emailImages.GrayLogo
+
+        })
+        resolve()
+      }
+      catch (error) {
+        console.log('SEND CHANGE EMAIL VERIFICATION ERROR:', error)
+        reject(error)
+      }
+    })
+  }
+
+  /**
+   * verify Change Email (EDIT EMAIL)
+   */
+  public verifyChangeEmail(token: string) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const payload: any = jwt.verify(token, this.change_email_secret)
+        if (!payload) {
+          return reject(new httpError(responseConstants.BAD_REQUEST_SIGN_UP, 'Invalid Token'))
+        }
+        // look for account
+        const id = payload.user
+        const user = await AccountModel.findOne({_id: id})
+        if (!user) {
+          return reject(new httpError(responseConstants.BAD_REQUEST_SIGN_UP, 'User Not found'))
+        }
+        // update the fucking user(verify the email)
+        const updatedUser = await AccountModel.findOneAndUpdate(
+          {_id: id},
+          {"email.isVerified": true},
+          {new: true}
+        ).select('-password')
+        resolve(updatedUser)
+      }
+      catch (error) {
+        console.log(error)
         reject(new httpError(responseConstants.BAD_REQUEST_SIGN_UP, 'Invalid Token'))
       }
     })
@@ -255,6 +323,33 @@ export default class Auth {
         resolve()
       }
       catch (error) {
+        reject(error)
+      }
+    })
+  }
+
+  /**
+   * reset password
+   */
+  public resetPassword(accountId: string, oldPassword: string, newPassword: string) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let user = await AccountModel.findOne({_id: accountId})
+        if (!user) {
+          return reject(new httpError(responseConstants.BAD_REQUEST_FIND_ACCOUNT, 'account does not exists'))
+        }
+        // check if old password matches
+        if (!Bcrypt.compare(oldPassword, user.password)) {
+          return reject(new httpError(responseConstants.BAD_REQUEST_FIND_ACCOUNT, 'incorrect current password'))
+        }
+        // update password
+        user.password = Bcrypt.hash(newPassword)
+        user.updatedAt = Date.now()
+        await user.save()
+        resolve()
+      }
+      catch (error) {
+        console.log('RESET PASSWORD ERROR: ', error)
         reject(error)
       }
     })

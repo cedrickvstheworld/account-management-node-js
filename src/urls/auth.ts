@@ -17,6 +17,12 @@ class Urls {
      // user verify email token and get set password token
      this.router.get('/sign-up/verify-email', Router.verifyAccountToken)
 
+     // user send change email verification
+     this.router.post('/update-account/email-verification/:accountId', Router.sendChangeEmailVerification)
+
+     // user verify email token and get set password token
+     this.router.get('/update-account/verify-email', Router.verifyChangeEmail)
+
      // set account password (signup process)
      this.router.patch(
        '/sign-up/set-password',

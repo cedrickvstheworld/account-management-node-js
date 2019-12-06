@@ -125,4 +125,66 @@ export default class Account extends Auth {
       })
     })
   }
+
+  /**
+   * edit account
+   */
+  public editAccount(accountId: string, firstName: string, lastName: string, email: string, mobileNo: string, roleLevel: number = 0, avatar: File) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const user = await AccountModel.findOne({_id: accountId}).select('-password')
+        if (!user) {
+          return reject(new httpError(responseConstants.BAD_REQUEST_UPDATE_ACCOUNT, 'account not found'))
+        }
+        user.firstName = firstName
+        user.lastName = lastName
+        // check if email will be changed
+        let sendEmailVerification = false
+        if (user.email.value !== email) {
+          // check if new email is in use by another account
+          const checkEmailIfExist = await AccountModel.findOne({
+            _id: {$ne: accountId},
+            "email.value": email
+          })
+          if (checkEmailIfExist) {
+            return reject(new httpError(responseConstants.BAD_REQUEST_UPDATE_ACCOUNT, 'email is in use by another account'))
+          }
+          user.email = {
+            value: email,
+            isVerified: false
+          }
+          sendEmailVerification = true
+        }
+        user.mobileNo = mobileNo
+        user.roleLevel = roleLevel
+        user.updatedAt = Date.now()
+        // upload avatar
+        if (avatar) {
+          // upload image and get s3path
+          const s3Path =  `kyoo-admin/accounts/${accountId}/avatar`
+          const fileUpload = await this.queries.upload(s3Path, avatar)
+          // @ts-ignore
+          user.avatarUrl = fileUpload.imageUrl
+        }
+        const updatedUser = (await user.save()).toObject()
+        // send email verification here if email was changed
+        updatedUser.sendEmailVerification = false
+        if (sendEmailVerification) {
+          updatedUser.sendEmailVerification = true
+          await this.sendChangeEmailVerification(accountId)
+          .then(() => {
+            updatedUser.sendEmailSuccess = true
+          })
+          .catch(() => {
+            updatedUser.sendEmailSuccess = false
+          })
+        }
+        resolve(updatedUser)
+      }
+      catch (error) {
+        console.log('EDIT ACCOUNT ERROR:', error)
+        reject(error)
+      }
+    })
+  }
 }
