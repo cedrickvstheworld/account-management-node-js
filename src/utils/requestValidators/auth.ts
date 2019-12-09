@@ -31,3 +31,12 @@ export const localSignUpFieldsComplete: IRequestValidator = {
   ],
   middleware: genericValidationMiddleWare
 }
+
+export const forgotPassword: IRequestValidator = {
+  pipeline: [
+    body('newPassword')
+    .matches(regExp.validPassword)
+    .withMessage('@requestBody -> newPassword: must pass this /^(?=.*?[0-9])(?=.*?[A-Z]).{6,}$/g to be valid')
+  ],
+  middleware: genericValidationMiddleWare
+}

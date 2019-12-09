@@ -146,6 +146,66 @@ class Router {
     })
   }
 
+  /**
+   * forgot password - send link 
+   */
+  public promptForgotPassword = (request: Request, response: Response) => {
+    const {identifier} = request.body
+    this.auth.forgotPasswordSendCode(identifier)
+    .then((reply) => {
+      response.status(HttpStatus.OK).json(reply)
+    })
+    .catch((error) => {
+      response.status(HttpStatus.BAD_REQUEST).json(error)
+    })
+  }
+
+  /**
+   * forgot password: check if verification code is valid
+   */
+  public forgotPasswordCheckVerificationToken = (request: Request, response: Response) => {
+    const {token} = request.params  
+    this.auth.forgotPasswordVerifyToken(token)
+    .then((token) => {
+      response.status(HttpStatus.OK).json({token})
+    })
+    .catch((error) => {
+      response.status(HttpStatus.BAD_REQUEST).json(error)
+    })
+  }
+
+  /**
+   * forgot password html view - for via email
+   */
+  public changePasswordWebView = async (request: Request, response: Response) => {
+    const {token} = request.params
+    try {
+      const setPasswordToken = await this.auth.forgotPasswordVerifyToken(token)
+      console.log('THIS IS THE MOTHER FUCKING VERIFICATION CODE:  ', setPasswordToken)
+      response.render('change-password', {token: setPasswordToken})
+    }
+    catch (error) {
+      console.log(error)
+      response.sendStatus(HttpStatus.BAD_REQUEST)
+    }
+  }
+
+  /**
+   * forgot password - change password
+   */
+  public changePassword = (request: Request, response: Response) => {
+    const {token} = request.params
+    const {newPassword} = request.body
+    this.auth.setAccountPassword(token, newPassword)
+    .then((updatedUser) => {
+      response.status(HttpStatus.OK).json(updatedUser)
+    })
+    .catch((error) => {
+      response.status(HttpStatus.BAD_REQUEST).json(error)
+    })
+
+  }
+
 }
 
 export default new Router()

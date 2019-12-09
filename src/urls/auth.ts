@@ -42,9 +42,26 @@ class Urls {
      // refresh access token
      this.router.patch('/refresh-token', Router.refreshAccessToken)
 
+     // forgot password send email
+     this.router.post('/forgot-password', Router.promptForgotPassword)
+
+     // forgot password : check if verification code is valid
+     this.router.get('/forgot-password/:token', Router.forgotPasswordCheckVerificationToken)
+
+     // forgot password - web view
+     this.router.get('/forgot-password/change-password/:token', Router.changePasswordWebView)
+
+     // forgot password - change password
+     this.router.post(
+      '/forgot-password/change-password/:token',
+      validator.forgotPassword.pipeline,
+      validator.forgotPassword.middleware,
+      Router.changePassword
+    )
+
      // authorization
      this.router.get('/', Router.authorize)
-     
+
      return this.router
    }
 

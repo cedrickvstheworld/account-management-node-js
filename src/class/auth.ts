@@ -17,6 +17,7 @@ export default class Auth {
   private sign_up_secret: string | any
   private set_password_secret: string | any
   private change_email_secret: string | any
+  private forgot_password_secret: string | any
 
   constructor() {
     this.redisClient = createClient(`redis://${process.env.REDIS_HOST}`)
@@ -27,6 +28,7 @@ export default class Auth {
 
     this.change_email_secret = process.env.CHANGE_EMAIL_SECRET
     this.set_password_secret = process.env.SET_PASSWORD_SECRET
+    this.forgot_password_secret = process.env.FORGOT_PASSWORD_SECRET
   }
 
   /**
@@ -353,6 +355,69 @@ export default class Auth {
         reject(error)
       }
     })
+  }
+
+  /**
+   * forgot password - send OTP or mail
+   */
+  public forgotPasswordSendCode(identifier: string) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // check if it exists in database. If not, reject
+        const user = await AccountModel.findOne({"email.value": identifier})
+        if (!user) {
+          // return reject(new httpError(responseConstants.BAD_REQUEST_FORGOT_PASSWORD, 'account does not exists'))
+          return resolve({})
+        }
+        // create verification code and store it in redis together with userId
+        const token =  jwt.sign({user: user._id}, this.forgot_password_secret, {expiresIn: 60 * 5})
+        // send forgot password link
+        let verificationLink = `${process.env.SERVICE_HOST}/auth/forgot-password/change-password/${token}`
+        const mailer: Mailer =  new Mailer(user.email.value, 'Forgot Password')
+        mailer.accountVerification({
+          button: {
+            link: verificationLink,
+            label: 'Reset Password'
+          },
+          content: `You have received this mail because you have forgotten your password. Click the Link Below to proceed or ignore this mail if you have no idea on what's happening`,
+          logo: emailImages.Logo,
+          grayLogo: emailImages.GrayLogo
+
+        })
+        return resolve ({msg: "change password link sent"})
+      }
+      catch (error) {
+        console.log('Forgot password Error: ', error)
+        return reject(error)
+      }
+    })
+  }
+
+  /**
+   * forgot Password: Check if Verfication code is valid
+   */
+  public forgotPasswordVerifyToken(token: string) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const payload: any = jwt.verify(token, this.forgot_password_secret)
+        if (!payload) {
+          return reject(new httpError(responseConstants.BAD_REQUEST_FORGOT_PASSWORD, 'Invalid Token'))
+        }
+        // look for account
+        const id = payload.user
+        const user = await AccountModel.findOne({_id: id})
+        if (!user) {
+          return reject(new httpError(responseConstants.BAD_REQUEST_FORGOT_PASSWORD, 'User Not found'))
+        }
+        // create reset password token
+        const setPasswordToken = jwt.sign({user: id}, this.set_password_secret, {expiresIn: 30 * 5})
+        resolve(setPasswordToken)
+      }
+      catch (error) {
+        console.log('FORGOT _PASSWORD - change password error', error)
+        reject(new httpError(responseConstants.BAD_REQUEST_FORGOT_PASSWORD, 'Invalid Token'))
+      }
+    })    
   }
 
 }
