@@ -80,7 +80,7 @@ export const actionBy = (user: IAccountModel): IActionBy => {
   return actionBy
 }
 
-export const dataFilter = (data: Array<any>, searchText: string = '', orderBy: string = '', order: string = 'ASC', offset: number = 0, limit: number = 0) => {
+export const dataFilter = (data: Array<any>, searchText: string = '', orderBy: string = '', order: string = 'ASC', offset: number = 0, limit: number = 0, searchFields: Array<string> = []) => {
   return new Promise((resolve, reject) => {
     if (!Array.isArray(data)) {
       return reject('data must be an array')
@@ -88,7 +88,7 @@ export const dataFilter = (data: Array<any>, searchText: string = '', orderBy: s
     // filter by searchText
     let filtered = data.filter((elem) => {
       const match = new RegExp(searchText, 'i')
-      let keys = Object.keys(elem)
+      let keys = searchFields.length !== 0 ? searchFields : Object.keys(elem)
       for (let ii in keys) {
         if (match.test(elem[keys[ii]])) {
           return elem

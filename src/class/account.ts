@@ -91,7 +91,15 @@ export default class Account extends Auth {
           }
         })
         const _order = order !== 1 ? 'DESC' : 'ASC'
-        const filtered = await dataFilter(_accounts, searchText, orderBy, _order, offset, limit)
+        const filtered = await dataFilter(
+          _accounts,
+          searchText,
+          orderBy,
+          _order,
+          offset,
+          limit,
+          ['name', 'email', 'lastLogin', 'userRole', 'status', 'addedBy', 'dateAdded']
+        )
         resolve(filtered)
       })
       .catch((error) => {
