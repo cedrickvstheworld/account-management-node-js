@@ -78,8 +78,9 @@ export default class Account extends Auth {
       ))
       .then(async (accounts) => {
         const _accounts = accounts.map((account) => {
-          let {firstName, lastName, email, roleLevel, isSuspended, addedBy, createdAt, lastSignedIn} = account
+          let {firstName, lastName, email, roleLevel, isSuspended, addedBy, createdAt, lastSignedIn, _id} = account
           return {
+            _id,
             name: `${firstName} ${lastName}`,
             email: `${email.value}`,
             lastLogin: `${moment(lastSignedIn).format('L')}-${moment(lastSignedIn).format('LT')}`,
