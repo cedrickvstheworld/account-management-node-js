@@ -202,6 +202,7 @@ export default class Auth {
             value = [...new Set(value)]
             // update key's value
             await this.redisClient.getset(payload._id, JSON.stringify(value))
+            return resolve()
           }
           await this.redisClient.set(payload._id, JSON.stringify(deviceFingerprints))
           resolve()
